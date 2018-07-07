@@ -416,7 +416,7 @@ static void dfu_detach_complete(usbd_device *dev, struct usb_setup_data *req)
 	platform_request_boot();
 
 	/* Reset core to enter bootloader */
-	scb_reset_core();
+	SCB_RESET();
 }
 
 static int cdcacm_control_request(usbd_device *dev,
@@ -504,7 +504,7 @@ static void cdcacm_set_config(usbd_device *dev, uint16_t wValue)
 	configured = wValue;
 
 	/* GDB interface */
-#if defined(STM32F4) || defined(LM4F)
+#if defined(STM32F4) || defined(LM4F) || defined(SAMD)
 	usbd_ep_setup(dev, 0x01, USB_ENDPOINT_ATTR_BULK,
 	              CDCACM_PACKET_SIZE, gdb_usb_out_cb);
 #else
@@ -557,6 +557,7 @@ void cdcacm_init(void)
 
 	nvic_set_priority(USB_IRQ, IRQ_PRI_USB);
 	nvic_enable_irq(USB_IRQ);
+	usbd_disconnect(usbdev, false);
 }
 
 void USB_ISR(void)
